@@ -1,1 +1,307 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Cartas Elementais — Vida Elementar</title>
+<style>
+  :root{
+    --bg:#0b0420; --panel:rgba(255,255,255,.06); --border:rgba(255,255,255,.15);
+    --pink:#ff3df0; --cyan:#21f3ff; --yellow:#ffe53d; --green:#3dff9c; --text:#f6f1ff; --muted:#9b8fbf;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;font-family:system-ui,Segoe UI,Roboto,sans-serif;color:var(--text);background:var(--bg);min-height:100vh}
+  body{
+    background:
+      radial-gradient(circle at 15% 20%, rgba(255,61,240,.25), transparent 40%),
+      radial-gradient(circle at 85% 10%, rgba(33,243,255,.25), transparent 40%),
+      radial-gradient(circle at 50% 90%, rgba(61,255,156,.18), transparent 45%),
+      var(--bg);
+  }
+  h1,h2,h3{margin:0}
+  .glow-pink{color:var(--pink);text-shadow:0 0 8px var(--pink),0 0 18px rgba(255,61,240,.6)}
+  .glow-cyan{color:var(--cyan);text-shadow:0 0 8px var(--cyan),0 0 18px rgba(33,243,255,.6)}
+  .glow-yellow{color:var(--yellow);text-shadow:0 0 8px var(--yellow),0 0 18px rgba(255,229,61,.6)}
+  .glow-green{color:var(--green);text-shadow:0 0 8px var(--green),0 0 18px rgba(61,255,156,.6)}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:16px;backdrop-filter:blur(8px);padding:16px}
+  .wrap{max-width:1100px;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:14px;min-height:100vh}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .hand{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .card{
+    width:90px;height:130px;border-radius:12px;border:2px solid var(--border);
+    background:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.02));
+    display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:8px;
+    cursor:pointer;transition:transform .2s, box-shadow .2s, border-color .2s;user-select:none;position:relative
+  }
+  .card .el{font-size:28px}
+  .card .val{font-size:22px;font-weight:800}
+  .card .name{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+  .card.selected{transform:translateY(-8px);border-color:var(--pink);box-shadow:0 0 18px var(--pink)}
+  .card.disabled{opacity:.55;cursor:not-allowed}
+  .card.back{
+    background:repeating-linear-gradient(45deg,#3a1170,#3a1170 6px,#5b1a9b 6px,#5b1a9b 12px);
+    color:transparent
+  }
+  .card.back::after{content:"★";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--cyan);font-size:28px;text-shadow:0 0 10px var(--cyan)}
+  .card.big{width:120px;height:170px}
+  .card.big .el{font-size:40px}
+  .card.big .val{font-size:30px}
+  .hp{display:flex;flex-direction:column;gap:6px;min-width:240px}
+  .hp .label{display:flex;justify-content:space-between;font-size:12px;letter-spacing:.15em;text-transform:uppercase}
+  .bar{height:12px;border-radius:99px;background:#1a0e35;overflow:hidden;border:1px solid var(--border)}
+  .bar > div{height:100%;transition:width .5s ease}
+  .btn{
+    padding:10px 18px;border-radius:10px;border:none;font-weight:800;text-transform:uppercase;letter-spacing:.15em;cursor:pointer;
+    transition:opacity .2s, transform .2s;font-size:13px
+  }
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .btn-attack{background:var(--pink);color:#1a0033;box-shadow:0 0 16px var(--pink)}
+  .btn-defend{background:var(--cyan);color:#003040;box-shadow:0 0 16px var(--cyan)}
+  .btn-next{background:var(--green);color:#003822;box-shadow:0 0 16px var(--green)}
+  .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border)}
+  .battlefield{min-height:240px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
+  .vs{display:flex;align-items:center;gap:24px}
+  .vs .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.2em;margin-bottom:6px}
+  .log{color:var(--muted);font-size:13px}
+  .footer-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+  @keyframes flip{from{transform:rotateY(90deg);opacity:0}to{transform:rotateY(0);opacity:1}}
+  .flip{animation:flip .5s ease}
+  @keyframes pulse{0%,100%{filter:drop-shadow(0 0 8px currentColor)}50%{filter:drop-shadow(0 0 22px currentColor)}}
+  .pulse{animation:pulse 1.4s infinite}
+  a.menu{color:var(--muted);text-decoration:none;font-size:13px}
+  a.menu:hover{color:var(--text)}
+  #screen-menu{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;min-height:90vh;text-align:center}
+  #screen-menu h1{font-size:48px;letter-spacing:.05em}
+  #screen-menu p{color:var(--muted);max-width:540px}
+  .menu-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+  .table-wrap{overflow:auto}
+  table{border-collapse:collapse;font-size:11px;margin:0 auto}
+  th,td{border:1px solid var(--border);padding:4px 6px;text-align:center;min-width:34px}
+  th{background:rgba(255,255,255,.05);position:sticky;top:0}
+  td.x2{background:rgba(61,255,156,.25);color:var(--green);font-weight:700}
+  td.x05{background:rgba(255,61,240,.2);color:var(--pink);font-weight:700}
+  td.x0{background:rgba(255,255,255,.1);color:var(--muted);font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
 
+<script>
+/* ============== DADOS ELEMENTAIS ============== */
+const ELEMENTS = ["Aço","Água","Dragão","Elétrico","Escuridão","Fada","Fantasma","Fogo","Gelo","Grama","Inseto","Lutador","Normal","Pedra","Psíquico","Terra","Veneno","Voador"];
+const ICONS = {"Aço":"⚙","Água":"💧","Dragão":"🐉","Elétrico":"⚡","Escuridão":"🌑","Fada":"✨","Fantasma":"👻","Fogo":"🔥","Gelo":"❄","Grama":"🌿","Inseto":"🐛","Lutador":"🥊","Normal":"⭐","Pedra":"🪨","Psíquico":"🔮","Terra":"⛰","Veneno":"☠","Voador":"🪶"};
+const COLORS = {"Aço":"#9ca3af","Água":"#3b82f6","Dragão":"#8b5cf6","Elétrico":"#facc15","Escuridão":"#1f2937","Fada":"#f9a8d4","Fantasma":"#6d28d9","Fogo":"#ef4444","Gelo":"#67e8f9","Grama":"#22c55e","Inseto":"#84cc16","Lutador":"#b45309","Normal":"#a8a29e","Pedra":"#78716c","Psíquico":"#ec4899","Terra":"#a16207","Veneno":"#a855f7","Voador":"#7dd3fc"};
+const CHART = {
+  "Aço":{Gelo:2,Pedra:2,Fada:2,Fogo:.5,Água:.5,Elétrico:.5,Aço:.5},
+  "Água":{Fogo:2,Terra:2,Pedra:2,Água:.5,Grama:.5,Dragão:.5},
+  "Dragão":{Dragão:2,Aço:.5,Fada:0},
+  "Elétrico":{Água:2,Voador:2,Elétrico:.5,Grama:.5,Dragão:.5,Terra:0},
+  "Escuridão":{Psíquico:2,Fantasma:2,Lutador:.5,Escuridão:.5,Fada:.5},
+  "Fada":{Lutador:2,Dragão:2,Escuridão:2,Fogo:.5,Veneno:.5,Aço:.5},
+  "Fantasma":{Psíquico:2,Fantasma:2,Escuridão:.5,Normal:0},
+  "Fogo":{Grama:2,Gelo:2,Inseto:2,Aço:2,Fogo:.5,Água:.5,Pedra:.5,Dragão:.5},
+  "Gelo":{Grama:2,Terra:2,Voador:2,Dragão:2,Fogo:.5,Água:.5,Gelo:.5,Aço:.5},
+  "Grama":{Água:2,Terra:2,Pedra:2,Fogo:.5,Grama:.5,Veneno:.5,Voador:.5,Inseto:.5,Dragão:.5,Aço:.5},
+  "Inseto":{Grama:2,Psíquico:2,Escuridão:2,Fogo:.5,Lutador:.5,Veneno:.5,Voador:.5,Fantasma:.5,Aço:.5,Fada:.5},
+  "Lutador":{Normal:2,Gelo:2,Pedra:2,Escuridão:2,Aço:2,Veneno:.5,Voador:.5,Psíquico:.5,Inseto:.5,Fada:.5,Fantasma:0},
+  "Normal":{Pedra:.5,Aço:.5,Fantasma:0},
+  "Pedra":{Fogo:2,Gelo:2,Voador:2,Inseto:2,Lutador:.5,Terra:.5,Aço:.5},
+  "Psíquico":{Lutador:2,Veneno:2,Psíquico:.5,Aço:.5,Escuridão:0},
+  "Terra":{Fogo:2,Elétrico:2,Veneno:2,Pedra:2,Aço:2,Grama:.5,Inseto:.5,Voador:0},
+  "Veneno":{Grama:2,Fada:2,Veneno:.5,Terra:.5,Pedra:.5,Fantasma:.5,Aço:0},
+  "Voador":{Grama:2,Lutador:2,Inseto:2,Elétrico:.5,Pedra:.5,Aço:.5}
+};
+function mult(a,d){const m=CHART[a]?.[d];return m===undefined?1:m}
+
+/* ============== MOTOR DE JOGO ============== */
+let _id=0;
+function newCard(){return{id:++_id,element:ELEMENTS[Math.floor(Math.random()*ELEMENTS.length)],value:Math.floor(Math.random()*10)+1}}
+function drawHand(n){return Array.from({length:n},newCard)}
+function resolveRound(p,b){
+  const r={winner:"tie",playerDamage:0,botDamage:0,pF:0,bF:0,mP:1,mB:1,log:""};
+  if(p.action==="DEFESA"&&b.action==="DEFESA"){r.log="Ambos defenderam — rodada passiva.";return r}
+  if(p.action==="ATAQUE"&&b.action==="ATAQUE"){
+    const mp=mult(p.card.element,b.card.element), mb=mult(b.card.element,p.card.element);
+    r.mP=mp;r.mB=mb;r.pF=p.card.value*mp;r.bF=b.card.value*mb;
+    r.playerDamage=r.pF;r.botDamage=r.bF;
+    r.log=`Ataque vs Ataque — mistura aplicada (x${mp} / x${mb}).`;
+  } else {
+    r.pF=p.card.value;r.bF=b.card.value;
+    if(p.action==="ATAQUE")r.playerDamage=p.card.value; else r.botDamage=b.card.value;
+    r.log="Ataque vs Defesa — defesa anulou a mistura, valores brutos.";
+  }
+  if(r.pF>r.bF)r.winner="player"; else if(r.bF>r.pF)r.winner="bot";
+  return r;
+}
+function botDecide(hand){
+  let best=hand[0], score=-Infinity;
+  for(const c of hand){const s=c.value+Math.random()*1.5;if(s>score){score=s;best=c}}
+  const p=best.value>=5?.75:.45;
+  return {card:best,action:Math.random()<p?"ATAQUE":"DEFESA"};
+}
+
+/* ============== ESTADO ============== */
+const HP_INIT=30, HAND=3;
+let state;
+function initState(){
+  state={pHp:HP_INIT,bHp:HP_INIT,pHand:drawHand(HAND),bHand:drawHand(HAND),
+    sel:null,phase:"choosing",round:1,revealed:null,result:null,screen:"menu"};
+}
+initState();
+
+/* ============== RENDER ============== */
+const app=document.getElementById("app");
+function cardHTML(c,{faceDown=false,big=false,selected=false,disabled=false,onClick=null}={}){
+  const cls=["card"];
+  if(big)cls.push("big");
+  if(faceDown)cls.push("back");
+  if(selected)cls.push("selected");
+  if(disabled)cls.push("disabled");
+  const style=faceDown?"":`border-color:${COLORS[c.element]};box-shadow:0 0 10px ${COLORS[c.element]}55`;
+  const inner=faceDown?"":`<div class="el">${ICONS[c.element]}</div><div class="val">${c.value}</div><div class="name">${c.element}</div>`;
+  const id=onClick?`data-card="${c.id}"`:"";
+  return `<div class="${cls.join(' ')}" style="${style}" ${id}>${inner}</div>`;
+}
+function hpBar(label,hp,color){
+  const pct=Math.max(0,Math.min(100,hp/HP_INIT*100));
+  return `<div class="hp"><div class="label"><span class="glow-${color}">${label}</span><span style="color:var(--muted)">${Math.max(0,Math.round(hp))} / ${HP_INIT}</span></div>
+  <div class="bar"><div style="width:${pct}%;background:linear-gradient(90deg,var(--${color}),var(--${color}));box-shadow:0 0 10px var(--${color})"></div></div></div>`;
+}
+
+function renderMenu(){
+  app.innerHTML=`
+  <div id="screen-menu">
+    <h1 class="glow-pink">CARTAS</h1>
+    <h1 class="glow-cyan" style="margin-top:-12px">ELEMENTAIS</h1>
+    <p>Jogo de estratégia de cartas baseado em turnos. Use a tabela elementar para multiplicar seu dano e zerar a vida do oponente.</p>
+    <div class="menu-btns">
+      <button class="btn btn-attack" data-go="play">▶ Jogar vs Bot</button>
+      <button class="btn btn-defend" data-go="table">📖 Tabela Elementar</button>
+    </div>
+    <p style="font-size:11px;opacity:.6">TCC — Lucca · Versão HTML/CSS/JS</p>
+  </div>`;
+  app.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{state.screen=b.dataset.go;render()});
+}
+
+function renderTable(){
+  let head=`<tr><th>ATK \\ DEF</th>${ELEMENTS.map(e=>`<th title="${e}" style="color:${COLORS[e]}">${ICONS[e]}</th>`).join("")}</tr>`;
+  let rows=ELEMENTS.map(a=>{
+    const cells=ELEMENTS.map(d=>{
+      const m=mult(a,d);
+      const cls=m===2?"x2":m===.5?"x05":m===0?"x0":"";
+      const txt=m===1?"":m===.5?"½":m===0?"0":"2";
+      return `<td class="${cls}">${txt}</td>`;
+    }).join("");
+    return `<tr><th style="color:${COLORS[a]};text-align:left;padding-left:6px">${ICONS[a]} ${a}</th>${cells}</tr>`;
+  }).join("");
+  app.innerHTML=`
+    <div class="row"><a class="menu" data-go="menu">← Menu</a><h2 class="glow-cyan">Tabela Elementar</h2><span></span></div>
+    <div class="panel table-wrap"><table>${head}${rows}</table>
+    <p style="text-align:center;color:var(--muted);font-size:12px;margin-top:10px">
+      <span class="glow-green">2×</span> super eficaz · <span class="glow-pink">½×</span> pouco eficaz · <span style="color:var(--muted)">0</span> não afeta
+    </p></div>`;
+  app.querySelector("[data-go]").onclick=()=>{state.screen="menu";render()};
+}
+
+function renderGame(){
+  const winner = state.pHp<=0&&state.bHp<=0?"EMPATE":state.pHp<=0?"BOT VENCEU":"VOCÊ VENCEU";
+  app.innerHTML=`
+    <div class="row">
+      <a class="menu" data-back>← Menu</a>
+      <div style="text-align:center">
+        <div style="font-size:11px;letter-spacing:.2em;color:var(--muted)">MODO</div>
+        <div class="glow-pink" style="font-weight:800">VIDA ELEMENTAR</div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);font-family:monospace">Rodada ${state.round}</div>
+    </div>
+
+    <section class="panel">
+      <div class="row">${hpBar("BOT",state.bHp,"cyan")}<span style="font-size:12px;color:var(--muted)">${state.bHand.length} cartas</span></div>
+      <div class="hand" style="margin-top:12px">${state.bHand.map(c=>cardHTML(c,{faceDown:true})).join("")}</div>
+    </section>
+
+    <section class="panel battlefield">
+      ${renderBattle(winner)}
+    </section>
+
+    <section class="panel">
+      <div class="row">${hpBar("VOCÊ",state.pHp,"pink")}<span style="font-size:12px;color:var(--muted)">${state.pHand.length} cartas</span></div>
+      <div class="hand" style="margin-top:12px">
+        ${state.pHand.map(c=>cardHTML(c,{selected:state.sel===c.id,disabled:state.phase!=="choosing",onClick:true})).join("")}
+      </div>
+      <div class="footer-actions" style="margin-top:14px">
+        ${state.phase==="choosing"?`
+          <button class="btn btn-attack" data-act="ATAQUE" ${state.sel?"":"disabled"}>⚔ Atacar</button>
+          <button class="btn btn-defend" data-act="DEFESA" ${state.sel?"":"disabled"}>🛡 Defender</button>`:""}
+        ${state.phase==="result"?`<button class="btn btn-next" data-next>Próxima rodada</button>`:""}
+        ${state.phase==="gameover"?`<button class="btn btn-next" data-reset>Jogar novamente</button>`:""}
+      </div>
+    </section>`;
+
+  app.querySelector("[data-back]").onclick=()=>{initState();state.screen="menu";render()};
+  app.querySelectorAll("[data-card]").forEach(el=>el.onclick=()=>{
+    if(state.phase!=="choosing")return;
+    state.sel=Number(el.dataset.card);render();
+  });
+  app.querySelectorAll("[data-act]").forEach(b=>b.onclick=()=>play(b.dataset.act));
+  const nx=app.querySelector("[data-next]"); if(nx)nx.onclick=nextRound;
+  const rs=app.querySelector("[data-reset]"); if(rs)rs.onclick=()=>{initState();state.screen="game";render()};
+}
+
+function renderBattle(winnerTxt){
+  if(state.phase==="choosing"&&!state.revealed){
+    return `<p style="text-transform:uppercase;letter-spacing:.2em;font-size:13px;color:var(--muted)">Escolha uma carta e a ação</p>
+            <p class="log">Ataque vs Ataque aplica mistura. Defesa anula a mistura.</p>`;
+  }
+  if(state.phase==="gameover"){
+    return `<h2 class="glow-yellow pulse" style="font-size:38px">${winnerTxt}</h2>`;
+  }
+  if(state.revealed){
+    const {player,bot}=state.revealed, r=state.result;
+    const resultLine = state.phase==="revealing" ? "" : `
+      <p class="log">${r.log}</p>
+      <p style="font-weight:800">${r.winner==="player"?'<span class="glow-green">Você venceu a rodada!</span>':r.winner==="bot"?'<span class="glow-pink">Bot venceu a rodada!</span>':'<span class="glow-yellow">Empate</span>'}</p>`;
+    return `<div class="vs flip">
+      <div><div class="lbl glow-pink">VOCÊ</div>${cardHTML(player,{big:true})}
+        ${r?`<div style="font-family:monospace;font-size:12px;margin-top:6px">${player.value} × ${r.mP} = <b class="glow-pink">${r.pF}</b></div>`:""}</div>
+      <div class="glow-yellow" style="font-size:34px;font-weight:900">VS</div>
+      <div><div class="lbl glow-cyan">BOT</div>${cardHTML(bot,{big:true})}
+        ${r?`<div style="font-family:monospace;font-size:12px;margin-top:6px">${bot.value} × ${r.mB} = <b class="glow-cyan">${r.bF}</b></div>`:""}</div>
+    </div>${resultLine}`;
+  }
+  return "";
+}
+
+/* ============== LÓGICA DE TURNO ============== */
+function play(action){
+  const card=state.pHand.find(c=>c.id===state.sel);
+  if(!card||state.phase!=="choosing")return;
+  const bot=botDecide(state.bHand);
+  const result=resolveRound({card,action},bot);
+  state.revealed={player:card,bot:bot.card};
+  state.result=result;
+  state.phase="revealing";
+  render();
+  setTimeout(()=>{
+    state.pHp=Math.max(0,state.pHp-result.botDamage);
+    state.bHp=Math.max(0,state.bHp-result.playerDamage);
+    state.pHand=state.pHand.filter(c=>c.id!==card.id).concat(newCard());
+    state.bHand=state.bHand.filter(c=>c.id!==bot.card.id).concat(newCard());
+    state.sel=null;
+    state.phase=(state.pHp<=0||state.bHp<=0)?"gameover":"result";
+    render();
+  },1100);
+}
+function nextRound(){state.round++;state.revealed=null;state.result=null;state.phase="choosing";render()}
+
+/* ============== ROTEAMENTO SIMPLES ============== */
+function render(){
+  if(state.screen==="menu")return renderMenu();
+  if(state.screen==="table")return renderTable();
+  if(state.screen==="play"){state.screen="game";initState();state.screen="game";return renderGame()}
+  if(state.screen==="game")return renderGame();
+}
+render();
+</script>
+</body>
+</html>
