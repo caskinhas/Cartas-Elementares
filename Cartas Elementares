@@ -28,28 +28,40 @@
   .row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
   .hand{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
   .card{
-    width:90px;height:130px;border-radius:12px;border:2px solid var(--border);
-    background:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.02));
-    display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:8px;
-    cursor:pointer;transition:transform .2s, box-shadow .2s, border-color .2s;user-select:none;position:relative
+    width:96px;height:140px;border-radius:14px;border:2px solid var(--border);
+    display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:6px;
+    cursor:pointer;transition:transform .2s, box-shadow .2s, border-color .2s;user-select:none;position:relative;overflow:hidden;
+    color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7)
   }
-  .card .el{font-size:28px}
-  .card .val{font-size:22px;font-weight:800}
-  .card .name{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
-  .card.selected{transform:translateY(-8px);border-color:var(--pink);box-shadow:0 0 18px var(--pink)}
-  .card.disabled{opacity:.55;cursor:not-allowed}
-  .card.back{
-    background:repeating-linear-gradient(45deg,#3a1170,#3a1170 6px,#5b1a9b 6px,#5b1a9b 12px);
-    color:transparent
-  }
-  .card.back::after{content:"★";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--cyan);font-size:28px;text-shadow:0 0 10px var(--cyan)}
-  .card.big{width:120px;height:170px}
-  .card.big .el{font-size:40px}
-  .card.big .val{font-size:30px}
+  .card .bg{position:absolute;inset:0;z-index:0}
+  .card .deco{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;font-size:96px;opacity:.22}
+  .card .content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:space-between;height:100%;width:100%}
+  .card .el{font-size:30px;filter:drop-shadow(0 0 6px rgba(0,0,0,.5))}
+  .card .val{font-size:24px;font-weight:900}
+  .card .name{font-size:10px;text-transform:uppercase;letter-spacing:.12em;font-weight:700}
+  .card .tips{display:flex;gap:6px;font-size:11px;background:rgba(0,0,0,.55);border-radius:8px;padding:2px 6px;align-items:center;border:1px solid rgba(255,255,255,.2)}
+  .card .tips .vs-strong{color:#9bff9b;text-shadow:0 0 4px #3dff9c}
+  .card .tips .vs-weak{color:#ffb3e6;text-shadow:0 0 4px var(--pink)}
+  .card.selected{transform:translateY(-8px);border-color:#fff;box-shadow:0 0 22px var(--pink),inset 0 0 10px rgba(255,255,255,.4)}
+  .card.disabled{opacity:.6;cursor:not-allowed}
+  .card.back .bg{background:repeating-linear-gradient(45deg,#3a1170,#3a1170 6px,#5b1a9b 6px,#5b1a9b 12px)}
+  .card.back::after{content:"★";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--cyan);font-size:30px;text-shadow:0 0 10px var(--cyan);z-index:2}
+  .card.big{width:130px;height:185px}
+  .card.big .el{font-size:44px}
+  .card.big .val{font-size:32px}
+  .card.big .deco{font-size:130px}
   .hp{display:flex;flex-direction:column;gap:6px;min-width:240px}
-  .hp .label{display:flex;justify-content:space-between;font-size:12px;letter-spacing:.15em;text-transform:uppercase}
-  .bar{height:12px;border-radius:99px;background:#1a0e35;overflow:hidden;border:1px solid var(--border)}
-  .bar > div{height:100%;transition:width .5s ease}
+  .hp .label{display:flex;justify-content:space-between;align-items:center;font-size:12px;letter-spacing:.15em;text-transform:uppercase}
+  .hp .heart{color:#ff3b3b;text-shadow:0 0 8px #ff3b3b,0 0 16px rgba(255,59,59,.6);font-size:16px;margin-right:6px;display:inline-block;animation:beat 1.3s infinite}
+  @keyframes beat{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+  .bar{height:14px;border-radius:99px;background:#330808;overflow:hidden;border:1px solid rgba(255,80,80,.45);box-shadow:inset 0 0 8px rgba(255,40,40,.35)}
+  .bar > div{height:100%;transition:width .5s ease;background:linear-gradient(90deg,#ff1f1f,#ff6b6b);box-shadow:0 0 12px #ff3b3b}
+  .action-badge{display:inline-block;margin-top:6px;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:800;letter-spacing:.15em;text-transform:uppercase}
+  .action-atk{background:var(--pink);color:#1a0033;box-shadow:0 0 12px var(--pink)}
+  .action-def{background:var(--cyan);color:#003040;box-shadow:0 0 12px var(--cyan)}
+  .dmg-line{margin-top:8px;font-size:14px;font-weight:800}
+  .dmg-pink{color:#ff6b6b;text-shadow:0 0 8px #ff3b3b}
+  .dmg-cyan{color:#9be7ff;text-shadow:0 0 8px var(--cyan)}
   .btn{
     padding:10px 18px;border-radius:10px;border:none;font-weight:800;text-transform:uppercase;letter-spacing:.15em;cursor:pointer;
     transition:opacity .2s, transform .2s;font-size:13px
@@ -117,20 +129,29 @@ function mult(a,d){const m=CHART[a]?.[d];return m===undefined?1:m}
 let _id=0;
 function newCard(){return{id:++_id,element:ELEMENTS[Math.floor(Math.random()*ELEMENTS.length)],value:Math.floor(Math.random()*10)+1}}
 function drawHand(n){return Array.from({length:n},newCard)}
+// playerDamage = dano causado PELO jogador NO bot. botDamage = dano causado PELO bot NO jogador.
+// Vencedor aplica dano, perdedor não causa nada. Empate: ambos aplicam dano.
 function resolveRound(p,b){
   const r={winner:"tie",playerDamage:0,botDamage:0,pF:0,bF:0,mP:1,mB:1,log:""};
-  if(p.action==="DEFESA"&&b.action==="DEFESA"){r.log="Ambos defenderam — rodada passiva.";return r}
+  if(p.action==="DEFESA"&&b.action==="DEFESA"){r.log="Ambos defenderam — rodada passiva, nenhum dano.";return r}
   if(p.action==="ATAQUE"&&b.action==="ATAQUE"){
     const mp=mult(p.card.element,b.card.element), mb=mult(b.card.element,p.card.element);
     r.mP=mp;r.mB=mb;r.pF=p.card.value*mp;r.bF=b.card.value*mb;
-    r.playerDamage=r.pF;r.botDamage=r.bF;
+    if(r.pF>r.bF){r.winner="player";r.playerDamage=r.pF;}
+    else if(r.bF>r.pF){r.winner="bot";r.botDamage=r.bF;}
+    else{r.winner="tie";r.playerDamage=r.pF;r.botDamage=r.bF;}
     r.log=`Ataque vs Ataque — mistura aplicada (x${mp} / x${mb}).`;
   } else {
+    // ATAQUE vs DEFESA: valores brutos. Só o atacante pode causar dano, e só se vencer.
     r.pF=p.card.value;r.bF=b.card.value;
-    if(p.action==="ATAQUE")r.playerDamage=p.card.value; else r.botDamage=b.card.value;
-    r.log="Ataque vs Defesa — defesa anulou a mistura, valores brutos.";
+    if(p.action==="ATAQUE"){
+      if(r.pF>r.bF){r.winner="player";r.playerDamage=r.pF;r.log="Ataque furou a defesa — dano bruto aplicado.";}
+      else{r.winner="bot";r.log="Defesa bloqueou o ataque.";}
+    } else {
+      if(r.bF>r.pF){r.winner="bot";r.botDamage=r.bF;r.log="Ataque furou a defesa — dano bruto aplicado.";}
+      else{r.winner="player";r.log="Defesa bloqueou o ataque.";}
+    }
   }
-  if(r.pF>r.bF)r.winner="player"; else if(r.bF>r.pF)r.winner="bot";
   return r;
 }
 function botDecide(hand){
@@ -151,21 +172,45 @@ initState();
 
 /* ============== RENDER ============== */
 const app=document.getElementById("app");
+function hexToRgb(h){h=h.replace('#','');return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]}
+function darken(h,f=.55){const [r,g,b]=hexToRgb(h);return `rgb(${r*f|0},${g*f|0},${b*f|0})`}
+function elementTips(el){
+  const chart=CHART[el]||{};
+  const strong=Object.entries(chart).filter(([,m])=>m===2).map(([e])=>ICONS[e]).slice(0,3);
+  const weak=Object.entries(chart).filter(([,m])=>m===.5||m===0).map(([e])=>ICONS[e]).slice(0,3);
+  return `<div class="tips" title="Forte contra / Fraco contra">
+    <span class="vs-strong">▲${strong.join('')||'–'}</span>
+    <span class="vs-weak">▼${weak.join('')||'–'}</span>
+  </div>`;
+}
 function cardHTML(c,{faceDown=false,big=false,selected=false,disabled=false,onClick=null}={}){
   const cls=["card"];
   if(big)cls.push("big");
   if(faceDown)cls.push("back");
   if(selected)cls.push("selected");
   if(disabled)cls.push("disabled");
-  const style=faceDown?"":`border-color:${COLORS[c.element]};box-shadow:0 0 10px ${COLORS[c.element]}55`;
-  const inner=faceDown?"":`<div class="el">${ICONS[c.element]}</div><div class="val">${c.value}</div><div class="name">${c.element}</div>`;
   const id=onClick?`data-card="${c.id}"`:"";
-  return `<div class="${cls.join(' ')}" style="${style}" ${id}>${inner}</div>`;
+  if(faceDown){
+    return `<div class="${cls.join(' ')}" ${id}><div class="bg"></div></div>`;
+  }
+  const color=COLORS[c.element], dark=darken(color,.45);
+  const bgStyle=`background:radial-gradient(circle at 30% 25%, ${color} 0%, ${darken(color,.7)} 60%, ${dark} 100%)`;
+  const border=`border-color:${color};box-shadow:0 0 14px ${color}99, inset 0 0 18px rgba(0,0,0,.35)`;
+  const inner=`
+    <div class="bg" style="${bgStyle}"></div>
+    <div class="deco">${ICONS[c.element]}</div>
+    <div class="content">
+      <div class="el">${ICONS[c.element]}</div>
+      <div class="val">${c.value}</div>
+      <div class="name">${c.element}</div>
+      ${elementTips(c.element)}
+    </div>`;
+  return `<div class="${cls.join(' ')}" style="${border}" ${id}>${inner}</div>`;
 }
 function hpBar(label,hp,color){
   const pct=Math.max(0,Math.min(100,hp/HP_INIT*100));
-  return `<div class="hp"><div class="label"><span class="glow-${color}">${label}</span><span style="color:var(--muted)">${Math.max(0,Math.round(hp))} / ${HP_INIT}</span></div>
-  <div class="bar"><div style="width:${pct}%;background:linear-gradient(90deg,var(--${color}),var(--${color}));box-shadow:0 0 10px var(--${color})"></div></div></div>`;
+  return `<div class="hp"><div class="label"><span class="glow-${color}"><span class="heart">❤</span>${label}</span><span style="color:var(--muted)">${Math.max(0,Math.round(hp))} / ${HP_INIT}</span></div>
+  <div class="bar"><div style="width:${pct}%"></div></div></div>`;
 }
 
 function renderMenu(){
@@ -176,11 +221,55 @@ function renderMenu(){
     <p>Jogo de estratégia de cartas baseado em turnos. Use a tabela elementar para multiplicar seu dano e zerar a vida do oponente.</p>
     <div class="menu-btns">
       <button class="btn btn-attack" data-go="play">▶ Jogar vs Bot</button>
+      <button class="btn btn-next" data-go="tutorial">❔ Tutorial</button>
       <button class="btn btn-defend" data-go="table">📖 Tabela Elementar</button>
     </div>
     <p style="font-size:11px;opacity:.6">TCC — Lucca · Versão HTML/CSS/JS</p>
   </div>`;
   app.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{state.screen=b.dataset.go;render()});
+}
+
+function renderTutorial(){
+  app.innerHTML=`
+    <div class="row"><a class="menu" data-go="menu">← Menu</a><h2 class="glow-yellow">Tutorial</h2><span></span></div>
+    <div class="panel" style="max-width:780px;margin:0 auto;line-height:1.55;font-size:14px">
+      <h3 class="glow-pink" style="margin-bottom:8px">RESUMO DO SISTEMA</h3>
+      <p>Jogo de estratégia de cartas baseado em turnos para 2 jogadores (ou contra BOT).</p>
+
+      <h3 class="glow-cyan" style="margin-top:18px;margin-bottom:8px">MODOS DE JOGO</h3>
+      <p><b class="glow-pink">Vida Elementar:</b> zerar a vida do adversário com base no dano do valor das cartas por turno.</p>
+      <p><b class="glow-cyan">Mão Cheia:</b> chegar a uma quantidade definida de cartas em mão.</p>
+
+      <h3 class="glow-green" style="margin-top:18px;margin-bottom:8px">MECÂNICA (GAMEPLAY)</h3>
+      <p>Início: cada jogador começa com <b>3 cartas</b>, cada carta com valor aleatório de <b>1 a 10</b>.</p>
+      <ol style="padding-left:20px;margin:6px 0">
+        <li>Jogadores escolhem uma carta (em segredo).</li>
+        <li>Jogadores escolhem a ação: <b class="glow-pink">ATAQUE</b> ou <b class="glow-cyan">DEFESA</b>.</li>
+        <li><b>Revelação:</b> as cartas e valores são mostrados.</li>
+        <li><b>Resolução:</b> o vencedor da rodada aplica o dano ao perdedor.</li>
+      </ol>
+
+      <h3 class="glow-yellow" style="margin-top:18px;margin-bottom:8px">REGRAS DE COMBATE E "MISTURA"</h3>
+      <p>A <b>Mistura</b> é o cálculo final baseado na Tabela Elementar.</p>
+      <ul style="padding-left:20px;margin:6px 0">
+        <li><b class="glow-pink">ATAQUE vs ATAQUE:</b> ambos aplicam bônus elementais (2× ou ½×). Quem tiver o valor final maior vence e causa dano.</li>
+        <li><b class="glow-cyan">ATAQUE vs DEFESA:</b> a defesa anula a mistura. Compara-se apenas o valor bruto. Se o atacante for maior, ele causa dano; senão, a defesa bloqueia.</li>
+        <li><b>DEFESA vs DEFESA:</b> rodada passiva. Nenhum dano é aplicado.</li>
+      </ul>
+
+      <h3 class="glow-pink" style="margin-top:18px;margin-bottom:8px">REGRA DE DANO</h3>
+      <ul style="padding-left:20px;margin:6px 0">
+        <li>Quem <b>vence</b> a rodada <b>aplica</b> dano ao perdedor. O vencedor <b>não recebe</b> nada.</li>
+        <li>Em caso de <b>empate</b> em ATAQUE vs ATAQUE, <b>ambos recebem</b> o dano.</li>
+      </ul>
+
+      <h3 class="glow-green" style="margin-top:18px;margin-bottom:8px">DESEMPATE</h3>
+      <ul style="padding-left:20px;margin:6px 0">
+        <li><b>1º empate:</b> nova rodada acumulando as cartas anteriores.</li>
+        <li><b>2º empate:</b> disputa pura no dado (quem tirar o maior valor ganha).</li>
+      </ul>
+    </div>`;
+  app.querySelector("[data-go]").onclick=()=>{state.screen="menu";render()};
 }
 
 function renderTable(){
@@ -257,16 +346,25 @@ function renderBattle(winnerTxt){
     return `<h2 class="glow-yellow pulse" style="font-size:38px">${winnerTxt}</h2>`;
   }
   if(state.revealed){
-    const {player,bot}=state.revealed, r=state.result;
+    const {player,bot,pAction,bAction}=state.revealed, r=state.result;
+    const badge=(act)=>`<div class="action-badge ${act==='ATAQUE'?'action-atk':'action-def'}">${act==='ATAQUE'?'⚔ ATAQUE':'🛡 DEFESA'}</div>`;
+    const dmgP = r && r.botDamage>0 ? `<div class="dmg-line dmg-pink">-${Math.round(r.botDamage)} HP</div>` : (state.phase!=="revealing"&&r?`<div class="dmg-line" style="color:var(--muted)">sem dano</div>`:"");
+    const dmgB = r && r.playerDamage>0 ? `<div class="dmg-line dmg-cyan">-${Math.round(r.playerDamage)} HP</div>` : (state.phase!=="revealing"&&r?`<div class="dmg-line" style="color:var(--muted)">sem dano</div>`:"");
     const resultLine = state.phase==="revealing" ? "" : `
       <p class="log">${r.log}</p>
       <p style="font-weight:800">${r.winner==="player"?'<span class="glow-green">Você venceu a rodada!</span>':r.winner==="bot"?'<span class="glow-pink">Bot venceu a rodada!</span>':'<span class="glow-yellow">Empate</span>'}</p>`;
     return `<div class="vs flip">
       <div><div class="lbl glow-pink">VOCÊ</div>${cardHTML(player,{big:true})}
-        ${r?`<div style="font-family:monospace;font-size:12px;margin-top:6px">${player.value} × ${r.mP} = <b class="glow-pink">${r.pF}</b></div>`:""}</div>
+        ${badge(pAction)}
+        ${r?`<div style="font-family:monospace;font-size:12px;margin-top:6px">${player.value} × ${r.mP} = <b class="glow-pink">${r.pF}</b></div>`:""}
+        ${state.phase!=="revealing"?dmgP:""}
+      </div>
       <div class="glow-yellow" style="font-size:34px;font-weight:900">VS</div>
       <div><div class="lbl glow-cyan">BOT</div>${cardHTML(bot,{big:true})}
-        ${r?`<div style="font-family:monospace;font-size:12px;margin-top:6px">${bot.value} × ${r.mB} = <b class="glow-cyan">${r.bF}</b></div>`:""}</div>
+        ${badge(bAction)}
+        ${r?`<div style="font-family:monospace;font-size:12px;margin-top:6px">${bot.value} × ${r.mB} = <b class="glow-cyan">${r.bF}</b></div>`:""}
+        ${state.phase!=="revealing"?dmgB:""}
+      </div>
     </div>${resultLine}`;
   }
   return "";
@@ -278,7 +376,7 @@ function play(action){
   if(!card||state.phase!=="choosing")return;
   const bot=botDecide(state.bHand);
   const result=resolveRound({card,action},bot);
-  state.revealed={player:card,bot:bot.card};
+  state.revealed={player:card,bot:bot.card,pAction:action,bAction:bot.action};
   state.result=result;
   state.phase="revealing";
   render();
@@ -297,8 +395,9 @@ function nextRound(){state.round++;state.revealed=null;state.result=null;state.p
 /* ============== ROTEAMENTO SIMPLES ============== */
 function render(){
   if(state.screen==="menu")return renderMenu();
+  if(state.screen==="tutorial")return renderTutorial();
   if(state.screen==="table")return renderTable();
-  if(state.screen==="play"){state.screen="game";initState();state.screen="game";return renderGame()}
+  if(state.screen==="play"){initState();state.screen="game";return renderGame()}
   if(state.screen==="game")return renderGame();
 }
 render();
