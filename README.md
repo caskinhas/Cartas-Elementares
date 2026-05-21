@@ -1,6 +1,6 @@
 PROJETO TCC: CARTAS ELEMENTAIS
 
-AUTOR: Lucca
+AUTOR: Lucca & Antonio
 
 ============================================================
 
